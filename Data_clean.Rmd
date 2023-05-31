@@ -1,0 +1,101 @@
+---
+title: "Data Cleaning with Principal Components Analysis"
+author: "Ifedayo Ojo | MSc Bioinformatics | Teesside University, England"
+date: "June 1, 2023"
+output:
+  pdf_document: default
+  html_notebook: default
+  word_document:
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+    number_sections: yes
+keywords:
+- outliers
+- data cleaning
+abstract: |
+  This is my abstract
+subtitle: Identifying outliers in mRNA count data obtained from prostate cancer samples
+always_allow_html: true
+---
+
+```{r include=FALSE}
+source("dataclean/helper.R")
+```
+
+```{r include=FALSE}
+data = "~/dataclean/GSE229904_mRNA_counts.tsv"
+result = wrangle(data)
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+
+result$joint_prob_density_plot
+
+```
+
+# Introduction
+
+Data cleaning is an essential preprocessing task in data analysis and machine learning that involves identifying and correcting or removing errors, inconsistencies, and outliers from a dataset. Outliers are data points that deviate significantly from the majority of the data, potentially indicating erroneous measurements, data entry mistakes, or rare but valid occurrences. The process of outlier identification is a crucial step in data cleaning as it helps ensure the integrity and reliability of the dataset. Outliers can have a significant impact on statistical analyses and machine learning algorithms, leading to skewed results, biased models, and reduced predictive accuracy. Therefore, detecting and handling outliers is necessary to avoid misleading conclusions and erroneous predictions. There are various techniques used to identify outliers during data cleaning. Here are a few commonly employed methods:
+
+Statistical Methods: Statistical techniques such as the z-score, modified z-score, and the interquartile range (IQR) are used to detect outliers. These methods measure the deviation of a data point from the mean or median of the dataset. Data points that fall beyond a certain threshold, typically set as a multiple of the standard deviation or IQR, are flagged as outliers.
+
+Visualization: Data visualization techniques like scatter plots, box plots, and histograms are effective tools for identifying outliers visually. Unusually distant or extreme data points can be visually identified and investigated further for potential errors or anomalies.
+
+Domain Knowledge: Subject-matter experts or domain specialists often have valuable insights into the data and can identify outliers based on their expertise. Their knowledge can help differentiate between genuine rare events and erroneous data.
+
+Machine Learning Techniques: Machine learning algorithms can be employed to automatically detect outliers. Techniques such as clustering, density-based outlier detection, and isolation forests can be used to identify observations that significantly differ from the majority.
+
+In this exercise, unsupervised machine learning technique, principal components analysis, will be used to identify outliers in the mRNA count data obatined from prostate cancer sample.
+
+## Principal Components Analysis.
+
+```{r echo=FALSE}
+
+grid.arrange(result$dp_before_scale, result$dp_after_scale, ncol =2)
+
+```
+
+```{r echo=FALSE}
+ggplotly(result$variance_explained_plot)
+
+```
+
+```{r echo=FALSE}
+library(gt)
+result$gene_pc_df %>% 
+  as.data.frame() %>% 
+  gt(rownames_to_stub = T) %>% 
+  tab_header(
+    title = md("Principal Components By **Genes**"),
+    subtitle = md("Weight of genes in each pricicipal components")
+  )  
+  
+  
+```
+
+```{r echo=FALSE, warning=FALSE}
+
+result$sample_pc_df %>% 
+  as.data.frame() %>% 
+  gt(rownames_to_stub = T) %>% 
+  tab_header(
+    title = md("Principal Components By **Sample**"),
+    subtitle = md("Weight of samples in each principal components")
+    
+  )
+```
+
+```{r echo=FALSE, warning=FALSE}
+
+result$pca_plot
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+
+result$joint_prob_density_plot
+
+```
