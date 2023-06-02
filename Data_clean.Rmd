@@ -3,29 +3,32 @@ title: "Data Cleaning with Principal Components Analysis"
 author: "Ifedayo Ojo | MSc Bioinformatics | Teesside University, England"
 date: "June 1, 2023"
 output:
-  pdf_document: default
-  html_notebook: default
-  word_document:
-    toc: yes
   html_document:
     df_print: paged
     toc: yes
+    css: style.css
     number_sections: yes
-keywords:
-- outliers
-- data cleaning
-abstract: |
-  This is my abstract
-subtitle: Identifying outliers in mRNA count data obtained from prostate cancer samples
+  html_notebook: default
+  word_document:
+    toc: yes
+  pdf_document:
+    toc: true
+    toc_depth: 2
+fontsize: 12pt
+geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
+subtitle: "Identifying outliers in mRNA count data obtained from prostate cancer samples"
 always_allow_html: true
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r include=FALSE}
-source("dataclean/helper.R")
+source("helper.R")
 ```
 
 ```{r include=FALSE}
-data = "~/dataclean/GSE229904_mRNA_counts.tsv"
+data = "GSE229904_mRNA_counts.tsv"
 result = wrangle(data)
 
 ```
@@ -38,19 +41,103 @@ result$joint_prob_density_plot
 
 # Introduction
 
-Data cleaning is an essential preprocessing task in data analysis and machine learning that involves identifying and correcting or removing errors, inconsistencies, and outliers from a dataset. Outliers are data points that deviate significantly from the majority of the data, potentially indicating erroneous measurements, data entry mistakes, or rare but valid occurrences. The process of outlier identification is a crucial step in data cleaning as it helps ensure the integrity and reliability of the dataset. Outliers can have a significant impact on statistical analyses and machine learning algorithms, leading to skewed results, biased models, and reduced predictive accuracy. Therefore, detecting and handling outliers is necessary to avoid misleading conclusions and erroneous predictions. There are various techniques used to identify outliers during data cleaning. Here are a few commonly employed methods:
+Data cleaning is a crucial preprocessing task in data analysis and
+machine learning. It involves identifying and correcting or removing
+errors, inconsistencies, and outliers from a dataset. Outliers are data
+points that deviate significantly from the majority of the data,
+potentially indicating errors, mistakes, or rare occurrences. Detecting
+outliers is essential for ensuring data integrity and reliability.
+Outliers can adversely affect statistical analyses and machine learning
+algorithms, leading to biased models and inaccurate predictions. Various
+techniques are used to identify outliers, including statistical methods
+(such as z-score and interquartile range), visualization techniques
+(scatter plots, box plots), domain knowledge, and machine learning
+algorithms (clustering, density-based detection, isolation forests). In
+this specific exercise, Principal Component Analysis (PCA), an
+unsupervised machine learning technique and density-based detection,
+will be employed to identify outliers in mRNA count data obtained from
+prostate cancer samples.
 
-Statistical Methods: Statistical techniques such as the z-score, modified z-score, and the interquartile range (IQR) are used to detect outliers. These methods measure the deviation of a data point from the mean or median of the dataset. Data points that fall beyond a certain threshold, typically set as a multiple of the standard deviation or IQR, are flagged as outliers.
+## Principal Components Analysis
 
-Visualization: Data visualization techniques like scatter plots, box plots, and histograms are effective tools for identifying outliers visually. Unusually distant or extreme data points can be visually identified and investigated further for potential errors or anomalies.
+Principal Component Analysis (PCA) is a statistical technique utilized
+for analyzing a data table comprising observations described by multiple
+correlated quantitative variables. Its primary objective is to extract
+crucial information from the data and represent it through a new set of
+orthogonal variables called principal components. These components
+facilitate the visualization of patterns of similarity between
+observations and variables on spot maps. The underlying mathematical
+principles of PCA rely on the eigen-decomposition of positive
+semi-definite matrices and the singular value decomposition (SVD) of
+rectangular matrices. Eigenvalues and eigenvectors, which are numeric
+values and vectors associated with square matrices, play a pivotal role
+in this decomposition process. By examining the structure of matrices
+such as correlation, covariance, or cross-product matrices, PCA reveals
+relationships within the data. PCA helps in outlier detection by
+transforming the data into a reduced-dimensional space where outliers
+become more apparent. By focusing on the principal components that
+capture the most variation, PCA provides a means to identify
+observations that deviate significantly from the norm.
 
-Domain Knowledge: Subject-matter experts or domain specialists often have valuable insights into the data and can identify outliers based on their expertise. Their knowledge can help differentiate between genuine rare events and erroneous data.
+# Method
 
-Machine Learning Techniques: Machine learning algorithms can be employed to automatically detect outliers. Techniques such as clustering, density-based outlier detection, and isolation forests can be used to identify observations that significantly differ from the majority.
+## Data wrangling
 
-In this exercise, unsupervised machine learning technique, principal components analysis, will be used to identify outliers in the mRNA count data obatined from prostate cancer sample.
+Count data of mRNA of prostate cancer samples obtained from a study with
+accession number GSE229904 on the Gene expression omnibus database was
+used for this task. The data count was imported into the R environment.
+The genes were first mapped to convert the its representation from
+ensemble id to gene symbol. rows without corresponding gene symbols were
+removed from the analysis.
 
-## Principal Components Analysis.
+## Data filtration
+
+The top 10% of the highly varied gene across the samples was selected
+for the analysis.
+
+## Data transformation
+
+The selected data was scaled to ensure fair representation of variables,
+improve PCA algorithm performance, avoid biases, and enhance
+interpretability. Furthermore, this data was then transformed from high
+dimensional to a lower-dimensional space, where the orthogonal variables
+(principal components) are uncorrelated and capture the most important
+information.
+
+## Outlier detection
+
+A graphical representation of data density with contour lines was used
+to identify the outliers in the dataset. This allowed visual distinction
+of regions of high density from low-density regions. Samples that fall
+outside the high-density regions indicated by the contour lines were
+considered unusual or anomalous samples (Outliers).
+
+## Software
+
+R version 4.2.3 (2023-03-15) -- "Shortstop Beagle" Copyright (C) 2023
+The R Foundation for Statistical Computing Platform: x86_64-pc-linux-gnu
+(64-bit)
+
+# Results
+
+## Data wrangling
+
+To map the ensemble ID in the dataset to gene symbols, the AnnotationDbi
+package was utilized. This process resulted in 36,314 out of the 60,616
+genes successfully being mapped to corresponding gene symbols.
+
+## Data filtration
+
+The analysis included genes that exhibited a high degree of variability,
+specifically the top 10% of genes based on their variability across
+samples. A total of 3622 genes fell into this category and were
+considered for further analysis.
+
+## Data transformation
+
+### Data Scaling
+The data was scaled and explored to ensure the density plot of the
+original data is comparable to scaled data. as shown in Figure 1
 
 ```{r echo=FALSE}
 
@@ -58,10 +145,23 @@ grid.arrange(result$dp_before_scale, result$dp_after_scale, ncol =2)
 
 ```
 
+Figure 1: Density Plot of CCNL2 before and after scaling
+
+### Variance Explained 
+Furthermore, the high dimensional scaled data was reduced to a lower dimensional data with its variables represented by principal components. The variance explained by the first 10 principal components is depicted in Figure 2 below.
+
 ```{r echo=FALSE}
 ggplotly(result$variance_explained_plot)
 
 ```
+
+<center>Figure 2: Variance explained first 10 PCs</center>
+
+\newpage
+### Transformed data 
+In the same vein, Table 1 displays the weights of the genes in the first six principal components of the transformed matrix.
+
+<center><b> Table 1: Weight of genes in first 6 PCs </b></center>
 
 ```{r echo=FALSE}
 library(gt)
@@ -70,11 +170,16 @@ result$gene_pc_df %>%
   gt(rownames_to_stub = T) %>% 
   tab_header(
     title = md("Principal Components By **Genes**"),
-    subtitle = md("Weight of genes in each pricicipal components")
+    subtitle = md("Weight of genes in each principal components")
   )  
   
   
 ```
+
+\newpage
+Similarly, the contribution of the samples on the first 6 principal components is presented below in table 2 
+
+<center><b> Table 2: Weight of samples in first 6 PCs </b></center>
 
 ```{r echo=FALSE, warning=FALSE}
 
@@ -88,14 +193,41 @@ result$sample_pc_df %>%
   )
 ```
 
+### PCA Plot
+
+Figure 3 displays a scatter plot illustrating the lack of correlation between the data projected onto PC1 and PC2, demonstrating the geometric orthogonality of the principal components.
+
 ```{r echo=FALSE, warning=FALSE}
 
 result$pca_plot
 
 ```
 
+<center>Figure 3: scatter plot of the first two PCs </center>
+
+## Outlier detection
+Analyzing the joint behavior of PC1 and PC2 involves examining the distribution of the bivariate vector (PC1, PC2). This analysis reveals regions of high density as well as regions with low or sparse density. The contour line displayed below represents the joint probability density of the first two principal components. Data points that fall outside these contour lines are considered potential outliers.
+
 ```{r echo=FALSE, warning=FALSE}
 
 result$joint_prob_density_plot
 
 ```
+
+<center>Figure 4:  </center>
+
+
+# conclusion 
+Principal component analysis (PCA) is a technique that reduces the complexity of high-dimensional data while preserving underlying trends and patterns. By transforming the data into a lower-dimensional space, PCA provides a concise summary of the original features. Performing a joint distribution density function on the first two PCs helped to reveal sample X175T,X104T,X1T, X186T and X206T as probable outlier that should be removed to imporove the result of data analysis
+
+\newpage
+# References
+
+
+<p> Devore, J.L., Berk, K.N. and Carlton, M.A. (2021) ‘Joint Probability Distributions and Their Applications’, in J.L. Devore, K.N. Berk, and M.A. Carlton (eds) Modern Mathematical Statistics with Applications. Cham: Springer International Publishing (Springer Texts in Statistics), pp. 277–356. Available at: https://doi.org/10.1007/978-3-030-55156-8_5. </p>
+<p> Huyan, N. et al. (2022) ‘Unsupervised Outlier Detection Using Memory and Contrastive Learning’, IEEE transactions on image processing: a publication of the IEEE Signal Processing Society, 31, pp. 6440–6454. Available at: https://doi.org/10.1109/TIP.2022.3211476.</p>
+<p> Lever, J., Krzywinski, M. and Altman, N. (2017) ‘Principal component analysis’, Nature Methods, 14(7), pp. 641–642. Available at: https://doi.org/10.1038/nmeth.4346. </p>
+<p> Mishra, S. et al. (2017) ‘Principal Component Analysis’, International Journal of Livestock Research, p. 1. Available at: https://doi.org/10.5455/ijlr.20170415115235. </p>
+
+
+

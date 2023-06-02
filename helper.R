@@ -50,8 +50,9 @@ wrangle <- function(data_path) {
   db <- ggplot(data = df2, aes(x=CCNL2)) + 
     geom_density(alpha= 0.5, fill = "#21c661") +
     theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    labs(title = 'Before Scaling the data')
+    labs(title = 'Before Scaling the data') +
+    theme(plot.title = element_text(hjust = 0.5,))
+    
   
   # scale data
   df2_scaled = scale(df2)
@@ -95,15 +96,15 @@ wrangle <- function(data_path) {
   gene_wt = res$rotation[1:20,1:6]
   
   # First 20 PCs of the 10 samples 
-  sample_pc = res$x[1:6,1:20]
-  sample_pc = t(sample_pc) * -1
+  sample_pc = res$x[1:20,1:6] * -1
+  #sample_pc = t(sample_pc) * -1
   
   # Create a subset data for plot
   df_sample = res$x[1:80,1:10]
   
   # PCA Plot
   ggplot(data = df_sample, aes(x=PC1, y=PC2))+
-    geom_point(aes(color = "orange"))+
+    geom_point(aes(color = "orange"), show.legend = FALSE)+
     geom_text_repel(aes(label= row.names(df_sample))) +
     labs(title = "Principal Components Plots") +
     theme_bw() +
@@ -115,7 +116,7 @@ wrangle <- function(data_path) {
                    show.legend = FALSE)+
     geom_point(aes(color = "red"), show.legend = FALSE)+
     geom_text_repel(aes(label= row.names(df_sample)))+
-    labs(title = "Joint Probablity Density Plot",
+    labs(title = "Probable Outlier Detection",
          y = "PC2 [10.9% variance explained]",
          x = "PC1 [51.2% variance explained]") + 
     theme_bw() +
